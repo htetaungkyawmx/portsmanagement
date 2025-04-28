@@ -5,6 +5,7 @@ import io.dronefleet.mavlink.MavlinkMessage;
 import jakarta.annotation.PostConstruct;
 import org.sks.portsmanagement.service.MavlinkMessageHandlerService;
 import org.sks.portsmanagement.utils.ZeroTierIPProvider;
+import org.sks.portsmanagement.wsconfig.WebSocketErrorBroadcaster;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ import java.util.concurrent.Executors;
 @Component
 public class MavlinkClient {
 
-    // Configuration for 9 ships, each with 5 ports (14550-14649)
+    // Configuration for 9 ships, each with 5 ports (15000-15044)
     private static final int PORTS_PER_SHIP = 5;
     private static final int BASE_PORT = 15000;
     private static final int TOTAL_SHIPS = 9;
@@ -33,14 +34,17 @@ public class MavlinkClient {
 
     private final ZeroTierIPProvider zeroTierIPProvider;
     private final MavlinkMessageHandlerService messageHandlerService;
+    private final WebSocketErrorBroadcaster errorBroadcaster;
 
     public MavlinkClient(ZeroTierIPProvider zeroTierIPProvider,
-                         MavlinkMessageHandlerService messageHandlerService) {
+                         MavlinkMessageHandlerService messageHandlerService,
+                         WebSocketErrorBroadcaster errorBroadcaster) {
         this.zeroTierIPProvider = zeroTierIPProvider;
         this.messageHandlerService = messageHandlerService;
+        this.errorBroadcaster = errorBroadcaster;
     }
 
-    // Generate ports from 14550 to 14550 + (100 * 9) - 1
+    // Generate ports from 15000 to 15045 + (5 * 9) - 1
     private List<Integer> generatePortList() {
         List<Integer> ports = new ArrayList<>();
         for (int i = 0; i < PORTS_PER_SHIP * TOTAL_SHIPS; i++) {
@@ -56,16 +60,32 @@ public class MavlinkClient {
     }
 
     private void setupAllowedShips() {
-        // Example configuration - replace with your actual ship IPs
-        // Ship 1: 192.168.1.23 (ports 14550-14649)
-        allowedShips.put("192.168.1.23", new PortRange(BASE_PORT, BASE_PORT + PORTS_PER_SHIP - 1));
+        // Ship 1: 192.168.1.15 (ports 15000-15004)
+        allowedShips.put("192.168.1.15", new PortRange(BASE_PORT, BASE_PORT + PORTS_PER_SHIP - 1));
 
-        // Ship 2: 192.168.1.24 (ports 14650-14749)
-        allowedShips.put("192.168.1.24", new PortRange(BASE_PORT + PORTS_PER_SHIP, BASE_PORT + 2*PORTS_PER_SHIP - 1));
+        // Ship 2: 192.168.1.16 (ports 15005-15009)
+        allowedShips.put("192.168.1.16", new PortRange(BASE_PORT + PORTS_PER_SHIP, BASE_PORT + 2*PORTS_PER_SHIP - 1));
 
-        // Add remaining ships (3-9) similarly...
-        // allowedShips.put("192.168.1.25", new PortRange(...));
-        // ...
+        // Ship 3: 192.168.1.17 (ports 15010-15014)
+        allowedShips.put("192.168.1.17", new PortRange(BASE_PORT + 2*PORTS_PER_SHIP, BASE_PORT + 3*PORTS_PER_SHIP - 1));
+
+        // Ship 4: 192.168.1.18 (ports 15015-15019)
+        allowedShips.put("192.168.1.18", new PortRange(BASE_PORT + 3*PORTS_PER_SHIP, BASE_PORT + 4*PORTS_PER_SHIP - 1));
+
+        // Ship 5: 192.168.1.19 (ports 15020-15024)
+        allowedShips.put("192.168.1.19", new PortRange(BASE_PORT + 4*PORTS_PER_SHIP, BASE_PORT + 5*PORTS_PER_SHIP - 1));
+
+        // Ship 6: 192.168.1.20 (ports 15025-15029)
+        allowedShips.put("192.168.1.20", new PortRange(BASE_PORT + 5*PORTS_PER_SHIP, BASE_PORT + 6*PORTS_PER_SHIP - 1));
+
+        // Ship 7: 192.168.1.21 (ports 15030-15034)
+        allowedShips.put("192.168.1.21", new PortRange(BASE_PORT + 6*PORTS_PER_SHIP, BASE_PORT + 7*PORTS_PER_SHIP - 1));
+
+        // Ship 8: 192.168.1.22 (ports 15035-15039)
+        allowedShips.put("192.168.1.22", new PortRange(BASE_PORT + 7*PORTS_PER_SHIP, BASE_PORT + 8*PORTS_PER_SHIP - 1));
+
+        // Ship 9: 192.168.1.23 (ports 15040-15044)
+        allowedShips.put("192.168.1.23", new PortRange(BASE_PORT + 8*PORTS_PER_SHIP, BASE_PORT + 9*PORTS_PER_SHIP - 1));
     }
 
     private boolean isSenderAllowed(InetAddress senderAddress, int targetPort) {
@@ -127,7 +147,24 @@ public class MavlinkClient {
                                 getAllowedPortsForIP(senderAddress)
                         );
                         System.out.println(errorJson);
+                        errorBroadcaster.broadcastError(errorJson);
 
+                        // Optionally send the error back via UDP
+                        try {
+                            byte[] errorBytes = errorJson.getBytes();
+                            DatagramPacket errorPacket = new DatagramPacket(
+                                    errorBytes,
+                                    errorBytes.length,
+                                    senderAddress,
+                                    senderPort
+                            );
+                            udpSocket.send(errorPacket);
+                        } catch (IOException e) {
+                            System.err.printf("❌ Failed to send error response to %s:%d: %s%n",
+                                    senderAddress.getHostAddress(),
+                                    senderPort,
+                                    e.getMessage());
+                        }
                     }
                 }
             }

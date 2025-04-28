@@ -8,8 +8,16 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
+
+    private final TelemetryWebSocketHandler telemetryHandler;
+
+    public WebSocketConfig(TelemetryWebSocketHandler telemetryHandler) {
+        this.telemetryHandler = telemetryHandler;
+    }
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new TelemetryWebSocketHandler(), "/telemetry").setAllowedOrigins("*");
+        registry.addHandler(telemetryHandler, "/telemetry")
+                .setAllowedOrigins("*");
     }
 }
