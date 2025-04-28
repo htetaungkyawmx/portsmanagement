@@ -184,7 +184,7 @@ public class MavlinkClient {
         }
     }
 
-    private void listenOnPort(InetAddress bindAddress, int port) {
+/*    private void listenOnPort(InetAddress bindAddress, int port) {
         try (DatagramSocket udpSocket = new DatagramSocket(new InetSocketAddress(bindAddress, port))) {
             System.out.printf("✅ Listening for MAVLink messages on IP %s, Port: %d%n", bindAddress, port);
             UdpInputStream udpInputStream = new UdpInputStream(udpSocket);
@@ -235,6 +235,80 @@ public class MavlinkClient {
         } catch (Exception e) {
             System.err.printf("❌ Error on port %d, IP %s: %s%n", port, bindAddress, e.getMessage());
         }
+    } */
+
+    private void listenOnPort(InetAddress bindAddress, int port) {
+        try (DatagramSocket udpSocket = new DatagramSocket(new InetSocketAddress(bindAddress, port))) {
+            System.out.printf("✅ Listening for MAVLink messages on IP %s, Port: %d%n", bindAddress, port);
+            UdpInputStream udpInputStream = new UdpInputStream(udpSocket);
+            MavlinkConnection mavlinkConnection = MavlinkConnection.create(udpInputStream, null);
+
+            while (!Thread.currentThread().isInterrupted()) {
+                MavlinkMessage<?> message = mavlinkConnection.next();
+                if (message != null) {
+                    InetAddress senderAddress = udpInputStream.getSenderAddress();
+                    int senderPort = udpInputStream.getSenderPort();
+                    String senderIp = senderAddress.getHostAddress();
+
+                    if (isSenderAllowed(senderAddress, port)) {
+                        messageHandlerService.handleMessage(message, port, udpSocket, senderAddress, senderPort);
+                    } else {
+                        // Find which ship this port actually belongs to
+                        String correctShipIp = findCorrectShipForPort(port);
+                        long timestamp = System.nanoTime();
+                        double nanoTimestamp = timestamp / 1_000_000_000.0; // Convert to seconds with decimal
+
+                        String errorJson = String.format(
+                                "{\"error\": \"unauthorized_connection\", " +
+                                        "\"timestamp\": %.5f, " +
+                                        "\"message\": \"Connection rejected\", " +
+                                        "\"details\": {" +
+                                        "\"attempted_ship_ip\": \"%s\", " +
+                                        "\"correct_ship_ip\": \"%s\", " +
+                                        "\"attempted_port\": %d, " +
+                                        "\"allowed_ports\": \"%s\"}}",
+                                nanoTimestamp,
+                                senderIp,
+                                correctShipIp != null ? correctShipIp : "none",
+                                port,
+                                getAllowedPortsForIP(senderAddress)
+                        );
+
+                        System.out.println(errorJson);
+                        errorBroadcaster.broadcastError(errorJson);
+
+                        // Optionally send the error back via UDP
+                        try {
+                            byte[] errorBytes = errorJson.getBytes();
+                            DatagramPacket errorPacket = new DatagramPacket(
+                                    errorBytes,
+                                    errorBytes.length,
+                                    senderAddress,
+                                    senderPort
+                            );
+                            udpSocket.send(errorPacket);
+                        } catch (IOException e) {
+                            System.err.printf("❌ Failed to send error response to %s:%d: %s%n",
+                                    senderIp,
+                                    senderPort,
+                                    e.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.printf("❌ Error on port %d, IP %s: %s%n", port, bindAddress, e.getMessage());
+        }
+    }
+
+    // Helper method to find which ship should be using this port
+    private String findCorrectShipForPort(int port) {
+        for (Map.Entry<String, PortRange> entry : allowedShips.entrySet()) {
+            if (port >= entry.getValue().startPort && port <= entry.getValue().endPort) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     private String getAllowedPortsForIP(InetAddress senderAddress) {
