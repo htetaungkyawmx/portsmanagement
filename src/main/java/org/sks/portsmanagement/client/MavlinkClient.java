@@ -59,98 +59,34 @@ public class MavlinkClient {
         startListening();
     }
 
-/*    private void setupAllowedShips() {
-        // Ship 1: 192.168.1.15 (ports 15000-15004)
-        allowedShips.put("192.168.1.15", new PortRange(BASE_PORT, BASE_PORT + PORTS_PER_SHIP - 1));
-
-        // Ship 2: 192.168.1.16 (ports 15005-15009)
-        allowedShips.put("192.168.1.16", new PortRange(BASE_PORT + PORTS_PER_SHIP, BASE_PORT + 2*PORTS_PER_SHIP - 1));
-
-        // Ship 3: 192.168.1.17 (ports 15010-15014)
-        allowedShips.put("192.168.1.17", new PortRange(BASE_PORT + 2*PORTS_PER_SHIP, BASE_PORT + 3*PORTS_PER_SHIP - 1));
-
-        // Ship 4: 192.168.1.18 (ports 15015-15019)
-        allowedShips.put("192.168.1.18", new PortRange(BASE_PORT + 3*PORTS_PER_SHIP, BASE_PORT + 4*PORTS_PER_SHIP - 1));
-
-        // Ship 5: 192.168.1.19 (ports 15020-15024)
-        allowedShips.put("192.168.1.19", new PortRange(BASE_PORT + 4*PORTS_PER_SHIP, BASE_PORT + 5*PORTS_PER_SHIP - 1));
-
-        // Ship 6: 192.168.1.20 (ports 15025-15029)
-        allowedShips.put("192.168.1.20", new PortRange(BASE_PORT + 5*PORTS_PER_SHIP, BASE_PORT + 6*PORTS_PER_SHIP - 1));
-
-        // Ship 7: 192.168.1.21 (ports 15030-15034)
-        allowedShips.put("192.168.1.21", new PortRange(BASE_PORT + 6*PORTS_PER_SHIP, BASE_PORT + 7*PORTS_PER_SHIP - 1));
-
-        // Ship 8: 192.168.1.22 (ports 15035-15039)
-        allowedShips.put("192.168.1.22", new PortRange(BASE_PORT + 7*PORTS_PER_SHIP, BASE_PORT + 8*PORTS_PER_SHIP - 1));
-
-        // Ship 9: 192.168.1.23 (ports 15040-15044)
-        allowedShips.put("192.168.1.23", new PortRange(BASE_PORT + 8*PORTS_PER_SHIP, BASE_PORT + 9*PORTS_PER_SHIP - 1));
-    }  */
-
     private void setupAllowedShips() {
-      try {
-        System.out.println("🚢 Starting ship IP and port configuration...");
+        // Ship 1: 192.168.1.** (ports 15000-15004)
+        allowedShips.put("192.168.1.55", new PortRange(BASE_PORT, BASE_PORT + PORTS_PER_SHIP - 1));
 
-        // Ship 1: 192.168.1.15 (ports 15000-15004)
-        allowedShips.put("192.168.1.15", new PortRange(BASE_PORT, BASE_PORT + PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 1: IP %-15s | Ports %d-%d%n",
-                "192.168.1.15", BASE_PORT, BASE_PORT + PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
+        // Ship 2: 192.168.1.** (ports 15005-15009)
+        allowedShips.put("192.168.1.25", new PortRange(BASE_PORT + PORTS_PER_SHIP, BASE_PORT + 2*PORTS_PER_SHIP - 1));
 
-        // Ship 2: 192.168.1.16 (ports 15005-15009)
-        allowedShips.put("192.168.1.16", new PortRange(BASE_PORT + PORTS_PER_SHIP, BASE_PORT + 2*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 2: IP %-15s | Ports %d-%d%n",
-                "192.168.1.16", BASE_PORT + PORTS_PER_SHIP, BASE_PORT + 2*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
-
-        // Ship 3: 192.168.1.17 (ports 15010-15014)
+        // Ship 3: 192.168.1.** (ports 15010-15014)
         allowedShips.put("192.168.1.17", new PortRange(BASE_PORT + 2*PORTS_PER_SHIP, BASE_PORT + 3*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 3: IP %-15s | Ports %d-%d%n",
-                "192.168.1.17", BASE_PORT + 2*PORTS_PER_SHIP, BASE_PORT + 3*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
 
-        // Ship 4: 192.168.1.18 (ports 15015-15019)
+        // Ship 4: 192.168.1.** (ports 15015-15019)
         allowedShips.put("192.168.1.18", new PortRange(BASE_PORT + 3*PORTS_PER_SHIP, BASE_PORT + 4*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 4: IP %-15s | Ports %d-%d%n",
-                "192.168.1.18", BASE_PORT + 3*PORTS_PER_SHIP, BASE_PORT + 4*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
 
-        // Ship 5: 192.168.1.19 (ports 15020-15024)
+        // Ship 5: 192.168.1.** (ports 15020-15024)
         allowedShips.put("192.168.1.19", new PortRange(BASE_PORT + 4*PORTS_PER_SHIP, BASE_PORT + 5*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 5: IP %-15s | Ports %d-%d%n",
-                "192.168.1.19", BASE_PORT + 4*PORTS_PER_SHIP, BASE_PORT + 5*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
 
-        // Ship 6: 192.168.1.20 (ports 15025-15029)
+        // Ship 6: 192.168.1.** (ports 15025-15029)
         allowedShips.put("192.168.1.20", new PortRange(BASE_PORT + 5*PORTS_PER_SHIP, BASE_PORT + 6*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 6: IP %-15s | Ports %d-%d%n",
-                "192.168.1.20", BASE_PORT + 5*PORTS_PER_SHIP, BASE_PORT + 6*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
 
-        // Ship 7: 192.168.1.21 (ports 15030-15034)
+        // Ship 7: 192.168.1.** (ports 15030-15034)
         allowedShips.put("192.168.1.21", new PortRange(BASE_PORT + 6*PORTS_PER_SHIP, BASE_PORT + 7*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 7: IP %-15s | Ports %d-%d%n",
-                "192.168.1.21", BASE_PORT + 6*PORTS_PER_SHIP, BASE_PORT + 7*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
 
-        // Ship 8: 192.168.1.22 (ports 15035-15039)
+        // Ship 8: 192.168.1.** (ports 15035-15039)
         allowedShips.put("192.168.1.22", new PortRange(BASE_PORT + 7*PORTS_PER_SHIP, BASE_PORT + 8*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 8: IP %-15s | Ports %d-%d%n",
-                "192.168.1.22", BASE_PORT + 7*PORTS_PER_SHIP, BASE_PORT + 8*PORTS_PER_SHIP - 1);
-        Thread.sleep(1000);
 
-        // Ship 9: 192.168.1.23 (ports 15040-15044)
+        // Ship 9: 192.168.1.** (ports 15040-15044)
         allowedShips.put("192.168.1.23", new PortRange(BASE_PORT + 8*PORTS_PER_SHIP, BASE_PORT + 9*PORTS_PER_SHIP - 1));
-        System.out.printf("⏳ Ship 9: IP %-15s | Ports %d-%d%n",
-                "192.168.1.23", BASE_PORT + 8*PORTS_PER_SHIP, BASE_PORT + 9*PORTS_PER_SHIP - 1);
-
-        System.out.println("✅ All ship configurations completed successfully!");
-    } catch (InterruptedException e) {
-        System.err.println("❌ Ship configuration was interrupted: " + e.getMessage());
-        Thread.currentThread().interrupt();
     }
-}
 
     private boolean isSenderAllowed(InetAddress senderAddress, int targetPort) {
         String ip = senderAddress.getHostAddress();
